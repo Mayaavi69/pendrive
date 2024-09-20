@@ -1,0 +1,100 @@
+# Last amended: 29th August, 2024
+# Quick install of chromadb on WSL2 ubuntu
+
+
+# 1.0 In wsl2 Ubuntu, download and Install Anaconda, if not installed
+
+#    a. Open Ubuntu terminal. Download Anaconda in Ubuntu, as:  
+
+	$ wget -c https://repo.anaconda.com/archive/Anaconda3-2024.06-1-Linux-x86_64.sh
+
+#    b. Install now Anaconda, as:
+#       ANSWER yes TO THE LAST QUESTION ASKED
+
+        $ bash Anaconda3-2024.06-1-Linux-x86_64.sh
+
+#   c. CLOSE ubuntu terminal and OPEN it again
+
+#    d. Install tilde in ubuntu:
+
+           $ wget http://os.ghalkes.nl/sources.list.d/install_repo.sh ; sudo sh ./install_repo.sh ; sudo apt-get install tilde 
+
+# 1.1  Create a folder Documents/data, as:
+
+		$ mkdir -p /home/ashok/Documents/data
+
+# 1.2 Install chromadb
+
+               $ pip install chromadb
+
+
+# 1.3 Start chroma, as:
+
+		$ chroma run --path /home/ashok/Documents/data
+		
+# 1.5	 Keep the ubuntu terminal open.
+#        In the browser, access: http://localhost:8000
+
+
+# 1.6 Kill chroma by pressing ctrl-c in Ubuntu terminal
+
+
+############ ALTERNATIVE WAY TO START CHROMA AS a SERVICE ############## 
+
+# 2.0  Run the following command to open a blank file in ubuntu tilde:
+
+        $ sudo tilde /etc/systemd/system/chroma.service
+
+
+# 2.1 And then copy/paste in it the following lines
+#      from line 50 to line 64. Save the file and exit tilde:
+#*********************************
+
+
+[Unit]
+Description = Chroma Service
+After = network.target
+
+[Service]
+Type = simple
+User = root
+Group = root
+WorkingDirectory = /home/ashok/Documents
+ExecStart=/home/ashok/anaconda3/bin/chroma run --host 127.0.0.1 --port 8000 --path /home/ashok/Documents/data --log-path /var/log/chroma.log
+
+[Install]
+WantedBy = multi-user.target
+
+#*********************************
+
+
+# 2.2 Next Run the following commands, one by one
+#     on ubuntu terminal:
+
+$ sudo systemctl daemon-reload
+$ sudo systemctl enable chroma
+$ sudo systemctl start chroma
+
+# 2.3 Check, if you get a response
+#     to the folloing command. You should 
+#     get a LISTEN response:
+
+  $ netstat -aunt | grep 8000
+
+# 2.4 From now on chroma will automatically start
+#      whenever ubuntu starts. It will be available at port 8000.
+############# Uninstall chroma ###################################
+
+# 3.0 In wsl stop chroma:
+#
+	$ sudo systemctl stop chroma	
+
+# 3.1 Then delete sqlite3 file:
+
+	$ sudo rm -r -f /home/ashok/Documents/chroma
+	$ mkdir -p /home/ashok/Documents/chroma
+
+# 4.0 Restart chroma:
+
+	$ sudo systemctl restart chroma
+	$  ls -la /home/ashok/Documents/chroma
